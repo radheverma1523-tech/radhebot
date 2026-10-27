@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e9b93a">
+<title>Bot Client Ledger</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-bleed navy header with gold rule, then one centred column: status line, summary tiles, toolbar, search and filters, responsive grid of client cards. Forms open as bottom sheets. */
+:root{
+  --font-display:"Cinzel","Trajan Pro",Georgia,serif;
+  --font-body:"Outfit",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-data:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+
+  --bg:#0a0c12;
+  --surface:#13161f;
+  --surface-2:#1a1e2a;
+  --field:#0d1017;
+  --line:#2b303f;
+  --line-soft:#1f2330;
+  --fg:#f3f1ea;
+  --muted:#a29fa0;
+
+  --gold:#e6bb4e;
+  --gold-hi:#f8dc8e;
+  --gold-lo:#b6862a;
+  --gold-text:#f0c65c;
+  --gold-soft:rgba(230,187,78,.22);
+  --on-gold:#1b1403;
+  --gold-grad:linear-gradient(135deg,var(--gold-hi),var(--gold) 52%,var(--gold-lo));
+
+  --ok:#3ed3a0;  --ok-bg:rgba(62,211,160,.14);
+  --warn:#ff9a45; --warn-bg:rgba(255,154,69,.16);
+  --bad:#ff7070;  --bad-bg:rgba(255,112,112,.16);
+
+  --head-1:#f6d77f; --head-2:#dba92e; --head-fg:#15183a; --head-muted:#54410d;
+  --glow-a:rgba(230,187,78,.08); --glow-b:rgba(120,110,150,.08);
+  --shadow:0 12px 32px rgba(0,0,0,.38);
+  --scrim:rgba(3,6,16,.72);
+
+  --av0-bg:#26324f; --av0-fg:#c3d0f0;
+  --av1-bg:#5a4513; --av1-fg:#ffe29a;
+  --av2-bg:#14524a; --av2-fg:#9ef0d6;
+  --av3-bg:#4a2a6e; --av3-fg:#e0c6ff;
+  --av4-bg:#6a2c3d; --av4-fg:#ffc3d1;
+  --tg0-bg:rgba(230,187,78,.18); --tg0-fg:#f0c65c;
+  --tg1-bg:rgba(62,211,160,.16); --tg1-fg:#6fe3bd;
+  --tg2-bg:rgba(167,139,250,.18); --tg2-fg:#c4b5fd;
+  --tg3-bg:rgba(251,113,133,.18); --tg3-fg:#fda4af;
+  --tg4-bg:rgba(96,165,250,.18); --tg4-fg:#93c5fd;
+  --tg5-bg:rgba(251,146,60,.18); --tg5-fg:#fdba74;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#edf0f9; --surface:#ffffff; --surface-2:#e5eafa; --field:#f5f7fd; --line:#cdd5ec; --line-soft:#e0e5f4;
+    --fg:#0b1535; --muted:#52608a;
+    --gold:#c8962a; --gold-hi:#f2d27a; --gold-lo:#a47615; --gold-text:#85590a; --gold-soft:rgba(200,150,42,.26);
+    --ok:#0c8a62; --ok-bg:rgba(12,138,98,.12); --warn:#b45309; --warn-bg:rgba(180,83,9,.12); --bad:#c23232; --bad-bg:rgba(194,50,50,.10);
+    --glow-a:rgba(200,150,42,.12); --glow-b:rgba(70,104,230,.12);
+    --shadow:0 10px 26px rgba(12,22,60,.12); --scrim:rgba(10,16,40,.5);
+    --av0-bg:#d6e3ff; --av0-fg:#1d3b78; --av1-bg:#fbe9b8; --av1-fg:#6b4a05; --av2-bg:#cdf3e5; --av2-fg:#0f5a49;
+    --av3-bg:#eadcff; --av3-fg:#4a2a6e; --av4-bg:#ffd9e2; --av4-fg:#7a2742;
+    --tg0-bg:rgba(200,150,42,.18); --tg0-fg:#85590a; --tg1-bg:rgba(12,138,98,.14); --tg1-fg:#0b7a58;
+    --tg2-bg:rgba(109,79,209,.13); --tg2-fg:#6d4fd1; --tg3-bg:rgba(190,58,85,.12); --tg3-fg:#be3a55;
+    --tg4-bg:rgba(29,95,184,.12); --tg4-fg:#1d5fb8; --tg5-bg:rgba(180,84,10,.13); --tg5-fg:#b4540a;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#edf0f9; --surface:#ffffff; --surface-2:#e5eafa; --field:#f5f7fd; --line:#cdd5ec; --line-soft:#e0e5f4;
+  --fg:#0b1535; --muted:#52608a;
+  --gold:#c8962a; --gold-hi:#f2d27a; --gold-lo:#a47615; --gold-text:#85590a; --gold-soft:rgba(200,150,42,.26);
+  --ok:#0c8a62; --ok-bg:rgba(12,138,98,.12); --warn:#b45309; --warn-bg:rgba(180,83,9,.12); --bad:#c23232; --bad-bg:rgba(194,50,50,.10);
+  --glow-a:rgba(200,150,42,.12); --glow-b:rgba(70,104,230,.12);
+  --shadow:0 10px 26px rgba(12,22,60,.12); --scrim:rgba(10,16,40,.5);
+  --av0-bg:#d6e3ff; --av0-fg:#1d3b78; --av1-bg:#fbe9b8; --av1-fg:#6b4a05; --av2-bg:#cdf3e5; --av2-fg:#0f5a49;
+  --av3-bg:#eadcff; --av3-fg:#4a2a6e; --av4-bg:#ffd9e2; --av4-fg:#7a2742;
+    --tg0-bg:rgba(200,150,42,.18); --tg0-fg:#85590a; --tg1-bg:rgba(12,138,98,.14); --tg1-fg:#0b7a58;
+    --tg2-bg:rgba(109,79,209,.13); --tg2-fg:#6d4fd1; --tg3-bg:rgba(190,58,85,.12); --tg3-fg:#be3a55;
+    --tg4-bg:rgba(29,95,184,.12); --tg4-fg:#1d5fb8; --tg5-bg:rgba(180,84,10,.13); --tg5-fg:#b4540a;
+  color-scheme:light;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font:400 15px/1.5 var(--font-body);
+  min-height:100%;
+  overflow-x:hidden;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--head-1);z-index:30}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(60% 40% at 90% 0%,var(--glow-a),transparent 70%),
+    radial-gradient(70% 50% at 0% 12%,var(--glow-b),transparent 70%);
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+.wrap{
+  width:100%;max-width:1080px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+
+/* ---------- header ---------- */
+.site-head{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+  background:linear-gradient(180deg,var(--head-1),var(--head-2));
+  color:var(--head-fg);
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(120,80,0,.28);
+}
+.head-in{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 13px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.crest{
+  flex:none;width:46px;height:46px;border-radius:14px;background:linear-gradient(145deg,#222c64,#0b1030);
+  display:grid;place-items:center;color:var(--gold-hi);
+  box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 6px 16px rgba(21,24,58,.35);
+  animation:glow 4.5s ease-in-out infinite;position:relative;overflow:hidden;
+}
+.crest::after{content:"";position:absolute;inset:-40% auto -40% -60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.65),transparent);transform:skewX(-20deg);animation:glint 5.5s ease-in-out infinite}
+.crest svg{width:26px;height:26px;position:relative;z-index:1}
+.brand-text{min-width:0}
+h1{
+  margin:0;font:700 clamp(17px,5vw,28px)/1.15 var(--font-display);letter-spacing:.03em;color:var(--head-fg);
+}
+@supports (-webkit-background-clip:text) or (background-clip:text){
+  h1{
+    background:linear-gradient(100deg,var(--head-fg) 0%,var(--head-fg) 38%,#fff9e0 50%,var(--head-fg) 62%,var(--head-fg) 100%);
+    background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    animation:shine 8s linear infinite;
+  }
+}
+.brand-text p{margin:3px 0 0;font-size:12.5px;color:var(--head-muted);letter-spacing:.02em}
+.gold-rule{height:3px;background:linear-gradient(90deg,transparent,#8a6410,#15183a,#8a6410,transparent);position:relative;overflow:hidden}
+.gold-rule::after{content:"";position:absolute;inset:0 auto 0 -30%;width:30%;background:linear-gradient(90deg,transparent,#fff,transparent);opacity:.75;animation:rule 6s ease-in-out infinite}
+.sparks{position:absolute;inset:0;pointer-events:none}
+.sparks i{position:absolute;bottom:-4px;left:var(--x);width:3px;height:3px;border-radius:50%;background:#fffbe8;opacity:0;animation:float var(--t,9s) linear var(--d,0s) infinite}
+.theme{
+  flex:none;display:flex;padding:3px;border-radius:999px;background:rgba(21,24,58,.10);border:1px solid rgba(21,24,58,.28);
+}
+.theme button{
+  display:flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:0;border-radius:999px;background:transparent;
+  color:var(--head-muted);font-weight:500;font-size:13px;transition:background .25s,color .25s,transform .2s;
+}
+.theme button svg{width:16px;height:16px}
+.theme button[aria-pressed="true"]{background:#15183a;color:var(--gold-hi);font-weight:600}
+.theme button:active{transform:scale(.95)}
+@media (max-width:520px){.theme button span{display:none}.theme button{padding:0 11px}}
+
+/* ---------- main ---------- */
+main{padding-block:18px calc(40px + env(safe-area-inset-bottom,0px))}
+.status-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:14px}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}.dot.gold{background:var(--gold)}
+.chip .dot.live{animation:pulse 2.4s ease-in-out infinite}
+.today{font-size:12.5px;color:var(--muted);font-family:var(--font-data)}
+
+.banner{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:14px 16px;margin-bottom:14px;border-radius:16px;
+  background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);color:var(--fg);
+}
+.banner p{margin:0;flex:1 1 220px;min-width:0}
+.banner.info{background:var(--gold-soft);border-color:color-mix(in srgb,var(--gold) 55%,transparent)}
+.banner b{font-weight:600}
+
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
+@media (min-width:760px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tile{
+  background:linear-gradient(160deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:18px;padding:14px 16px;min-width:0;
+  transition:transform .25s,border-color .25s,box-shadow .25s;
+}
+.tile:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:var(--shadow)}
+.num{font:700 clamp(26px,7vw,34px)/1.1 var(--font-data);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.num.gold{color:var(--gold-text)}.num.warn{color:var(--warn)}.num.bad{color:var(--bad)}
+.lab{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.sub{margin-top:3px;font-size:12px;color:var(--muted);font-family:var(--font-data)}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.btn{
+  position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;
+  border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:600;font-size:14.5px;
+  transition:transform .2s,border-color .2s,background .2s,box-shadow .2s;
+}
+.btn svg{width:18px;height:18px;flex:none}
+.btn:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:var(--shadow)}
+.btn:active{transform:translateY(0) scale(.97)}
+.btn.gold{background:var(--gold-grad);color:var(--on-gold);border-color:transparent;box-shadow:0 8px 22px var(--gold-soft)}
+.btn.gold::after{content:"";position:absolute;inset:-30% auto -30% -70%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-20deg);animation:glint 5s ease-in-out 1.2s infinite}
+.btn.sm{min-height:40px;padding:0 13px;font-size:13.5px;border-radius:12px}
+.btn.danger{color:var(--bad)}
+.btn.danger:hover{border-color:var(--bad)}
+.btn.warnbtn{background:transparent}
+.btn:disabled{opacity:.55;cursor:default;transform:none}
+
+.finder{display:grid;gap:10px;margin-bottom:14px}
+.search{position:relative}
+.search svg{position:absolute;left:14px;top:50%;width:18px;height:18px;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+input[type=search]{padding-left:42px}
+.field-in,input[type=search],input[type=text],input[type=email],input[type=number],input[type=date],input[type=password],select,textarea{
+  width:100%;min-height:46px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--field);color:var(--fg);font-size:16px;
+  transition:border-color .2s,box-shadow .2s;
+}
+textarea{min-height:84px;resize:vertical}
+input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--muted) 75%,transparent)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fchip{
+  min-height:40px;padding:0 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:500;font-size:14px;
+  display:inline-flex;align-items:center;gap:8px;transition:all .2s;
+}
+.fchip small{font-family:var(--font-data);font-size:11.5px;color:var(--muted)}
+.fchip:hover{border-color:var(--gold)}
+.fchip[aria-pressed="true"]{background:var(--gold-grad);color:var(--on-gold);border-color:transparent;font-weight:600}
+.fchip[aria-pressed="true"] small{color:var(--on-gold);opacity:.75}
+.selectbox{position:relative;max-width:260px}
+.selectbox select{appearance:none;-webkit-appearance:none;padding-right:40px;font-size:15px}
+.selectbox::after{content:"";position:absolute;right:16px;top:50%;width:8px;height:8px;margin-top:-6px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);pointer-events:none}
+
+.list-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 12px}
+.list-head h2{margin:0;font:600 17px/1.2 var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--gold-text)}
+.lh-r{display:flex;align-items:center;gap:10px}
+.lh-r span{font-size:12.5px;color:var(--muted);font-family:var(--font-data)}
+
+.tagbar{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.tagbar .fchip{flex:none}
+.fchip.sm{min-height:36px;padding:0 13px;font-size:13.5px}
+.fchip.ghost{border-style:dashed;color:var(--muted)}
+.tdot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+.sortrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sortrow .selectbox{flex:1 1 200px}
+.tagchip{display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:999px}
+.tc0{background:var(--tg0-bg);color:var(--tg0-fg)}.tc1{background:var(--tg1-bg);color:var(--tg1-fg)}.tc2{background:var(--tg2-bg);color:var(--tg2-fg)}
+.tc3{background:var(--tg3-bg);color:var(--tg3-fg)}.tc4{background:var(--tg4-bg);color:var(--tg4-fg)}.tc5{background:var(--tg5-bg);color:var(--tg5-fg)}
+.tcn{background:var(--line-soft);color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px;align-items:start}
+.group-head{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:8px}
+.group-head:first-child{margin-top:0}
+.group-head .n{font:500 12.5px var(--font-data);color:var(--muted)}
+.group-head::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+.card{
+  min-width:0;background:linear-gradient(165deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:20px;padding:14px 16px 16px;
+  display:flex;flex-direction:column;gap:12px;transition:transform .25s,box-shadow .25s,border-color .25s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.card.soon{border-color:color-mix(in srgb,var(--warn) 65%,var(--line))}
+.card.expired{border-color:color-mix(in srgb,var(--bad) 70%,var(--line))}
+.card.picked{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.card.enter{animation:rise .55s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*70ms)}
+.card.flash{animation:flash 1.4s ease-out}
+.card.leaving{animation:leave .22s ease-in forwards}
+.c-top{display:flex;align-items:center;gap:12px;cursor:pointer;border-radius:14px;margin:-4px;padding:4px;-webkit-tap-highlight-color:transparent}
+.avatar{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:700 18px/1 var(--font-display)}
+.av0{background:var(--av0-bg);color:var(--av0-fg)}.av1{background:var(--av1-bg);color:var(--av1-fg)}.av2{background:var(--av2-bg);color:var(--av2-fg)}
+.av3{background:var(--av3-bg);color:var(--av3-fg)}.av4{background:var(--av4-bg);color:var(--av4-fg)}
+.who{flex:1;min-width:0}
+.who h3{margin:0;font-size:18px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.who p{margin:3px 0 0;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.chev{flex:none;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+.chev svg{transition:transform .35s cubic-bezier(.2,.75,.2,1)}
+.chev .ch{display:none}
+.card.open .chev .cs{display:none}.card.open .chev .ch{display:inline}
+.card.open .chev svg{transform:rotate(180deg)}
+.pick{flex:none;width:26px;height:26px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;color:transparent;transition:background .2s,border-color .2s,color .2s,transform .2s}
+.card.picked .pick{background:var(--gold-grad);border-color:transparent;color:var(--on-gold);transform:scale(1.06)}
+.stat-line{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+.exp{font-size:13.5px;color:var(--muted)}
+.exp b{color:var(--fg);font-family:var(--font-data);font-weight:700;font-size:14px}
+.pill{flex:none;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.active{background:var(--ok-bg);color:var(--ok)}
+.pill.soon{background:var(--warn-bg);color:var(--warn)}.pill.soon i{animation:pulse 1.6s ease-in-out infinite}
+.pill.expired{background:var(--bad-bg);color:var(--bad)}
+.bar{height:8px;border-radius:999px;background:var(--line-soft);overflow:hidden}
+.bar i{display:block;height:100%;width:var(--w,100%);border-radius:inherit;transform-origin:left;animation:grow .9s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*70ms + .15s)}
+.card.active .bar i{background:linear-gradient(90deg,var(--ok),color-mix(in srgb,var(--ok) 55%,var(--gold-hi)))}
+.card.soon .bar i{background:linear-gradient(90deg,var(--warn),var(--gold))}
+.card.expired .bar i{background:var(--bad)}
+.renew{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.renew>span:first-child{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px;font-weight:500}
+.renew .rate{margin-left:auto;font-family:var(--font-data);font-size:12.5px;color:var(--muted)}
+.mini{
+  min-height:36px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-family:var(--font-data);font-weight:700;font-size:12.5px;
+  transition:transform .15s,border-color .2s,background .2s;
+}
+.mini:hover{border-color:var(--gold)}.mini:active{transform:scale(.92)}
+.mini.done{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.details{display:grid;grid-template-rows:0fr;margin-top:-12px;visibility:hidden;transition:grid-template-rows .38s cubic-bezier(.2,.75,.2,1),margin-top .38s cubic-bezier(.2,.75,.2,1),visibility 0s .38s}
+.card.open .details{grid-template-rows:1fr;margin-top:0;visibility:visible;transition:grid-template-rows .38s cubic-bezier(.2,.75,.2,1),margin-top .38s cubic-bezier(.2,.75,.2,1),visibility 0s}
+.inner{overflow:hidden;min-height:0;display:grid;gap:12px;padding:2px}
+.creds{display:grid;gap:0;padding:2px 14px;border-radius:14px;background:var(--field);border:1px solid var(--line-soft)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"k ra" "v ra";gap:2px 10px;align-items:center;padding:10px 0}
+.row+.row{border-top:1px dashed var(--line-soft)}
+.k{grid-area:k;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.v{grid-area:v;min-width:0;font-family:var(--font-data);font-size:13.5px;overflow-wrap:anywhere;user-select:all}
+.ra{grid-area:ra;display:flex;gap:6px}
+.note{font-size:13.5px;padding:9px 12px;border-radius:12px;background:var(--gold-soft);overflow-wrap:anywhere;color:var(--fg)}
+.empty-creds{margin:0;font-size:13.5px;color:var(--muted)}
+.more{display:flex;flex-wrap:wrap;gap:8px;padding-top:2px}
+
+.empty{
+  grid-column:1/-1;text-align:center;padding:40px 20px;border:1px dashed var(--line);border-radius:20px;color:var(--muted);
+  display:grid;gap:12px;justify-items:center;
+}
+.empty h3{margin:0;font:600 18px/1.3 var(--font-display);letter-spacing:.05em;color:var(--fg)}
+.empty p{margin:0;max-width:34ch}
+.foot{margin:26px 0 0;font-size:13px;color:var(--muted);max-width:70ch}
+
+/* ---------- sheets, toast ---------- */
+body.lock{overflow:hidden}
+.overlay{
+  position:fixed;inset:0;z-index:60;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;
+  animation:fade .22s ease-out;backdrop-filter:blur(3px);
+}
+.overlay.out{animation:fadeout .18s ease-in forwards}
+.sheet{
+  width:min(580px,100%);max-height:calc(100% - 20px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;
+  background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;
+  padding-top:18px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));
+  animation:sheetup .35s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 60px rgba(0,0,0,.4);
+}
+.overlay.out .sheet{animation:sheetdown .18s ease-in forwards}
+@media (min-width:700px){
+  .overlay{align-items:center}
+  .sheet{border-radius:24px;border-bottom:1px solid var(--line);max-height:min(88%,820px)}
+}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.sheet-head h2{margin:0;font:700 20px/1.2 var(--font-display);letter-spacing:.05em;color:var(--gold-text)}
+.icon-btn{flex:none;width:42px;height:42px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--line);background:var(--field)}
+.icon-btn svg{width:18px;height:18px}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.form .full{grid-column:1/-1}
+@media (max-width:460px){.form{grid-template-columns:minmax(0,1fr)}}
+.fld{display:grid;gap:6px;min-width:0}
+.fld>label,.fld>.lbl{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+.fld .hint{font-size:12.5px;color:var(--muted);letter-spacing:0;text-transform:none;font-weight:400}
+.inline{display:flex;gap:8px}
+.inline>*{min-width:0}
+.quick{display:flex;flex-wrap:wrap;gap:8px}
+.check{display:flex;align-items:center;gap:10px;font-size:14.5px}
+.check input{width:20px;height:20px;accent-color:var(--gold);flex:none}
+.err{grid-column:1/-1;margin:0;padding:10px 14px;border-radius:12px;background:var(--bad-bg);color:var(--bad);font-size:14px;font-weight:500}
+.form-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;padding-top:4px}
+.sheet h3.sec{margin:20px 0 8px;font:600 13px/1.2 var(--font-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sheet p.txt{margin:0 0 12px;color:var(--muted);font-size:14px}
+.toast{
+  position:fixed;z-index:80;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));margin:0 auto;max-width:460px;
+  display:flex;align-items:center;gap:12px;padding:12px 14px 12px 16px;border-radius:16px;
+  background:var(--surface-2);border:1px solid var(--gold);box-shadow:var(--shadow);font-size:14.5px;animation:toastin .3s cubic-bezier(.2,.8,.2,1);
+}
+.toast span{flex:1;min-width:0;overflow-wrap:anywhere}
+.toast button{flex:none;min-height:38px;padding:0 14px;border-radius:10px;border:0;background:var(--gold-grad);color:var(--on-gold);font-weight:700}
+.toast.out{animation:toastout .2s ease-in forwards}
+.selbar{
+  position:fixed;z-index:40;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;
+  padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:var(--surface-2);border-top:1px solid var(--gold);box-shadow:0 -14px 34px rgba(0,0,0,.35);animation:sheetup .3s cubic-bezier(.2,.8,.2,1);
+}
+.selbar b{font-family:var(--font-data);font-size:14px}
+.selbtns{display:flex;flex-wrap:wrap;gap:8px}
+body.selecting main{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+body.selecting .toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.optlist{display:grid;gap:8px}
+.pickopt{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--field);font-weight:500;font-size:15px;text-align:left;transition:border-color .2s,transform .15s}
+.pickopt:hover{border-color:var(--gold)}.pickopt:active{transform:scale(.98)}
+.tagrow{display:flex;align-items:center;gap:8px;padding:5px 0}
+.tagrow input{flex:1;min-width:0}
+.tagrow small{flex:none;font-family:var(--font-data);font-size:12px;color:var(--muted);min-width:18px;text-align:right}
+.swatch{flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--field);display:grid;place-items:center}
+.swatch i{width:18px;height:18px;border-radius:50%;display:block}
+.fld>label.check{text-transform:none;letter-spacing:0;font-size:14.5px;color:var(--fg);font-weight:500}
+
+/* ---------- motion ---------- */
+@keyframes rise{from{opacity:.01;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes fadeout{to{opacity:0}}
+@keyframes sheetup{from{transform:translateY(40px);opacity:.01}to{transform:none;opacity:1}}
+@keyframes sheetdown{to{transform:translateY(40px);opacity:0}}
+@keyframes toastin{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastout{to{transform:translateY(14px);opacity:0}}
+@keyframes leave{to{opacity:0;transform:scale(.94) translateY(6px)}}
+@keyframes flash{0%{box-shadow:0 0 0 0 var(--gold)}35%{box-shadow:0 0 0 6px var(--gold-soft),0 0 28px var(--gold-soft)}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 6px 16px rgba(21,24,58,.30)}50%{box-shadow:0 0 0 1px rgba(255,255,255,.28) inset,0 6px 24px rgba(21,24,58,.5)}}
+@keyframes glint{0%,60%{transform:translateX(0) skewX(-20deg)}100%{transform:translateX(420%) skewX(-20deg)}}
+@keyframes shine{from{background-position:130% 0}to{background-position:-130% 0}}
+@keyframes rule{0%,40%{transform:translateX(0)}100%{transform:translateX(480%)}}
+@keyframes float{0%{opacity:0;transform:translateY(0)}15%{opacity:.8}100%{opacity:0;transform:translateY(-70px)}}
+.head-in{animation:rise .6s cubic-bezier(.2,.75,.2,1) backwards}
+.tile{animation:rise .6s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:calc(var(--i,0)*80ms + .1s)}
+.toolbar,.finder,.status-row{animation:rise .6s cubic-bezier(.2,.75,.2,1) backwards;animation-delay:.35s}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.001ms!important}
+  .sparks{display:none}
+}
+
+/* ---------- phone-first overrides ---------- */
+input[type=search]{padding-left:44px}
+.fab{display:none}
+@media (hover:none){.tile:hover,.btn:hover,.card:hover{transform:none;box-shadow:none}}
+@media (max-width:640px){
+  html{-webkit-text-size-adjust:100%}
+  .wrap{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+  .site-head{position:relative;top:0}
+  .head-in{padding-block:10px}
+  .crest{width:40px;height:40px;border-radius:12px}
+  .brand-text p{font-size:11.5px}
+  main{padding-block:12px calc(110px + env(safe-area-inset-bottom,0px))}
+  .status-row{margin-bottom:10px}
+  .banner{padding:12px 14px;font-size:14px}
+  .banner .btn{width:100%}
+  .stats{gap:8px;margin-bottom:12px}
+  .tile{padding:12px 14px;border-radius:16px}
+  .num{font-size:26px}
+  .lab{font-size:10.5px;margin-top:6px}
+  .toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+  .toolbar .btn{flex-direction:column;gap:5px;min-height:62px;padding:8px 2px;font-size:12px;border-radius:14px}
+  .toolbar .btn svg{width:22px;height:22px}
+  .toolbar .btn.gold{display:none}
+  .finder{gap:10px;margin-bottom:8px}
+  input[type=search]{min-height:50px;border-radius:14px}
+  .tagbar,.filters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-inline:-12px;padding-inline:12px}
+  .tagbar::-webkit-scrollbar,.filters::-webkit-scrollbar{display:none}
+  .filters .fchip{flex:none}
+  .sortrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+  .sortrow .selectbox{max-width:none;flex:none}
+  .list-head{margin:14px 0 10px}
+  .grid{grid-template-columns:minmax(0,1fr);gap:12px}
+  .card{padding:14px;border-radius:20px;gap:14px}
+  .avatar{width:50px;height:50px}
+  .who h3{font-size:19px}
+  .stat-line{gap:8px}
+  .pill{font-size:13.5px;padding:7px 13px}
+  .exp{font-size:14px}
+  .bar{height:10px}
+  .renew{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .renew>span:first-child{grid-column:1/-1;margin:0}
+  .renew .rate{grid-column:1/-1;margin:0;font-size:13px;order:5}
+  .mini{min-height:48px;font-size:14px;border-radius:12px}
+  .btn.sm{min-height:46px}
+  .more .btn{flex:1 1 calc(50% - 8px)}
+  .row{padding:12px 0}
+  .v{font-size:14.5px}
+  .ra .icon-btn,.ra .btn,.ra button{min-width:44px;min-height:44px}
+  .foot{margin-top:18px}
+  .fab{
+    position:fixed;z-index:30;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));
+    display:inline-flex;align-items:center;gap:8px;min-height:56px;padding:0 22px;border:0;border-radius:999px;
+    background:var(--gold-grad);color:var(--on-gold);font-weight:700;font-size:16px;box-shadow:0 10px 28px rgba(0,0,0,.35),0 4px 14px var(--gold-soft);
+  }
+  .fab svg{width:22px;height:22px}
+  .fab:active{transform:scale(.95)}
+  body.lock .fab,body.selecting .fab{display:none}
+  .sparks{display:none}
+  .overlay .sheet{max-height:calc(100% - 12px - env(safe-area-inset-top,0px));border-radius:22px 22px 0 0}
+  .form-actions .btn{flex:1 1 100%}
+  .selbar .selbtns{width:100%}.selbar .selbtns .btn{flex:1}
+}
+</style>
+</head>
+<body>
+<script>
+try{var _t=localStorage.getItem('botledger.theme');document.documentElement.setAttribute('data-theme',_t==='dark'?'dark':'light')}catch(e){document.documentElement.setAttribute('data-theme','light')}
+</script>
+
+<header class="site-head" id="top">
+  <div class="sparks" aria-hidden="true">
+    <i style="--x:6%;--d:0s;--t:9s"></i><i style="--x:17%;--d:2.4s;--t:11s"></i><i style="--x:29%;--d:5.1s;--t:8s"></i>
+    <i style="--x:41%;--d:1.2s;--t:10s"></i><i style="--x:53%;--d:6.3s;--t:9s"></i><i style="--x:64%;--d:3.3s;--t:12s"></i>
+    <i style="--x:75%;--d:7.5s;--t:8.5s"></i><i style="--x:86%;--d:4.2s;--t:10.5s"></i><i style="--x:94%;--d:0.8s;--t:9.5s"></i>
+  </div>
+  <div class="wrap head-in">
+    <div class="brand">
+      <div class="crest" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 19h18v2H3zM3.4 7.2l4.6 4.2L12 4.6l4 6.8 4.6-4.2L19 17H5z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>Bot Client Ledger</h1>
+        <p>Lord's Mobile clients, bots and expiry dates</p>
+      </div>
+    </div>
+    <div class="theme" role="group" aria-label="Colour theme">
+      <button type="button" id="themeDay" aria-pressed="true" aria-label="Day theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Day</span>
+      </button>
+      <button type="button" id="themeNight" aria-pressed="false" aria-label="Night theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg><span>Night</span>
+      </button>
+    </div>
+  </div>
+  <div class="gold-rule"></div>
+</header>
+
+<button class="fab" type="button" aria-label="Add client" onclick="document.getElementById('btnAdd').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add client</button>
+<main class="wrap">
+  <div class="status-row">
+    <span class="chip"><i class="dot live" id="syncDot"></i><span id="syncText">Loading your ledger</span></span>
+    <span class="today" id="todayText"></span>
+  </div>
+
+  <div id="banners"></div>
+
+  <section class="stats" aria-label="Summary">
+    <div class="tile" style="--i:0"><div class="num" id="stClients">0</div><div class="lab"><i class="dot ok"></i>Clients</div><div class="sub" id="stBots"></div></div>
+    <div class="tile" style="--i:1"><div class="num warn" id="stSoon">0</div><div class="lab"><i class="dot warn"></i><span id="stSoonLab">Ending in 3 days</span></div></div>
+    <div class="tile" style="--i:2"><div class="num bad" id="stExpired">0</div><div class="lab"><i class="dot bad"></i>Expired</div></div>
+    <div class="tile" style="--i:3"><div class="num gold" id="stSold">₹0</div><div class="lab"><i class="dot gold"></i>Sold this month</div><div class="sub" id="stMonth"></div></div>
+  </section>
+
+  <div class="toolbar">
+    <button class="btn gold" type="button" id="btnAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add client</button>
+    <button class="btn" type="button" id="btnSelect" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>Select</button>
+    <button class="btn" type="button" id="btnTags"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg>Tags</button>
+    <button class="btn" type="button" id="btnExcel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Download Excel</button>
+    <button class="btn" type="button" id="btnSettings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Backup &amp; settings</button>
+  </div>
+
+  <div class="finder">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" id="q" placeholder="Search name, email, game ID, contact, tag or note" autocomplete="off" aria-label="Search clients">
+    </div>
+    <div class="tagbar" id="tagbar" role="group" aria-label="Filter by tag"></div>
+    <div class="filters" id="filters" role="group" aria-label="Filter by status">
+      <button class="fchip" type="button" data-f="all" aria-pressed="true">All <small id="cAll">0</small></button>
+      <button class="fchip" type="button" data-f="active" aria-pressed="false">Active <small id="cActive">0</small></button>
+      <button class="fchip" type="button" data-f="soon" aria-pressed="false">Ending soon <small id="cSoon">0</small></button>
+      <button class="fchip" type="button" data-f="expired" aria-pressed="false">Expired <small id="cExpired">0</small></button>
+    </div>
+    <div class="sortrow">
+      <div class="selectbox">
+        <select id="sort" aria-label="Sort clients">
+          <option value="soon">Soonest expiry</option>
+          <option value="late">Latest expiry</option>
+          <option value="name">Name A to Z</option>
+          <option value="new">Recently added</option>
+          <option value="bots">Most bot accounts</option>
+        </select>
+      </div>
+      <button class="fchip" type="button" id="btnGroup" aria-pressed="false">Group by tag</button>
+    </div>
+  </div>
+
+  <div class="list-head"><h2>Client roll</h2><div class="lh-r"><span id="listCount"></span><button class="mini" type="button" id="btnExpand">Expand all</button></div></div>
+  <section class="grid" id="list" aria-live="polite"></section>
+  <p class="foot" id="foot"></p>
+</main>
+
+<div class="selbar" id="selbar" hidden><b id="selCount">0 selected</b><div class="selbtns"><button class="btn sm" type="button" id="selAll">Select all shown</button><button class="btn sm gold" type="button" id="selMove" disabled>Move to tag</button><button class="btn sm" type="button" id="selDone">Done</button></div></div>
+<div id="overlayRoot"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<input type="file" id="importFile" accept=".json,.xlsx,.xls,.csv" hidden>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ---------- helpers ---------- */
+const LS_KEY='botledger.v2', LS_THEME='botledger.theme', LS_PREFS='botledger.prefs';
+const DEFAULT_TPL="Hi {name}, your Lord's Mobile bot ({bots}) {when}, on {date}. Reply here to renew and I will extend it right away.";
+const DEFAULT_TAGS=[{id:'t-clients',name:'Clients',color:0},{id:'t-suppliers',name:'Suppliers',color:1}];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const num=x=>{const n=Number(x);return isFinite(n)?n:0};
+const reduceMotion=()=>window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function toISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function todayISO(){return toISO(new Date())}
+function parseISO(s){const p=String(s).split('-').map(Number);return new Date(p[0],p[1]-1,p[2])}
+function addDays(iso,n){const d=parseISO(iso);d.setDate(d.getDate()+n);return toISO(d)}
+function diffDays(a,b){return Math.round((parseISO(b)-parseISO(a))/864e5)}
+function fmtDate(iso){if(!iso)return '';const d=parseISO(iso);return pad(d.getDate())+'-'+MONTHS[d.getMonth()]+'-'+d.getFullYear()}
+function uid(p){return p+'-'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4)}
+function money(n){return '₹'+Math.round(num(n)).toLocaleString('en-IN')}
+function plural(n,w){return n+' '+w+(n===1?'':'s')}
+function safeId(id,p){return (typeof id==='string'&&/^[A-Za-z0-9_-]{1,60}$/.test(id)&&id!=='settings')?id:uid(p)}
+
+const ICON={
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></svg>',
+  down:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+};
+
+/* ---------- state ---------- */
+const state={
+  clients:[],sales:[],
+  settings:{soonDays:3,template:DEFAULT_TPL,lastBackup:null,tags:DEFAULT_TAGS.map(t=>Object.assign({},t))},
+  examples:false
+};
+const ui={filter:'all',tag:'all',group:false,sort:'soon',q:'',seen:new Set(),shown:new Set(),open:new Set(),picked:new Set(),select:false,flash:null,day:todayISO()};
+const cloud={col:null,uid:null,failed:false,hasSettings:false,migrating:false,sub:null};
+let dl=null;
+
+/* ---------- tags ---------- */
+const tags=()=>state.settings.tags;
+function tagById(id){return tags().find(t=>t.id===id)||null}
+function tagOf(c){if(c.tag!==undefined&&c.tag!==null)return c.tag;return c.type==='reseller'?'t-suppliers':''}
+function effTag(c){const id=tagOf(c);return tagById(id)?id:''}
+function tagChip(t){return '<span class="tagchip tc'+(t.color%6)+'">'+esc(t.name)+'</span>'}
+function tagDot(t){return '<i class="tdot" style="background:var(--tg'+(t.color%6)+'-fg)"></i>'}
+function createTag(name,color){
+  name=String(name||'').trim().slice(0,28);
+  if(!name)return null;
+  const ex=tags().find(t=>t.name.toLowerCase()===name.toLowerCase());
+  if(ex)return ex;
+  const t={id:uid('t'),name,color:Number.isInteger(color)?((color%6)+6)%6:tags().length%6};
+  tags().push(t);
+  queueSettings();
+  return t;
+}
+
+/* ---------- status of a client ---------- */
+function info(c){
+  const t=todayISO(),soon=Math.max(1,num(state.settings.soonDays)||3);
+  const d=diffDays(t,c.expiry);
+  let kind,label;
+  if(d<0){kind='expired';label=d===-1?'Expired yesterday':'Expired '+(-d)+' days ago'}
+  else if(d===0){kind='soon';label='Expires today'}
+  else if(d<=soon){kind='soon';label=d===1?'Ends tomorrow':'Ending in '+d+' days'}
+  else{kind='active';label=d+' days left'}
+  const start=c.start&&c.start<=c.expiry?c.start:addDays(c.expiry,-30);
+  const total=Math.max(1,diffDays(start,c.expiry));
+  const pct=kind==='expired'?100:Math.max(4,Math.min(100,Math.round(d/total*100)));
+  let when;
+  if(d<0)when=d===-1?'expired yesterday':'expired '+(-d)+' days ago';
+  else if(d===0)when='expires today';
+  else if(d===1)when='expires tomorrow';
+  else when='expires in '+d+' days';
+  return {d,kind,label,pct,when};
+}
+
+/* ---------- samples ---------- */
+function sampleData(){
+  const t=todayISO();
+  const mk=(name,tag,bots,rate,startOff,expOff,email,pass,game,contact,notes)=>({
+    id:uid('c'),name,tag,bots,email,password:pass,gameId:game,contact,rate,notes:notes||'',
+    start:addDays(t,startOff),expiry:addDays(t,expOff),created:Date.now()-Math.abs(expOff)*1000
+  });
+  const a=mk('Arjun (example)','t-clients',1,300,-31,-1,'arjun.example@mail.com','demo-pass-1','48213907','+91 90000 00001','Pays by UPI, usually renews a day late.');
+  const b=mk('Meera (example)','t-clients',2,550,-28,2,'meera.example@mail.com','demo-pass-2','47750122','+91 90000 00002','');
+  const c=mk('Dev Kumar (example)','t-suppliers',5,1200,-18,12,'dev.example@mail.com','demo-pass-3','49100334','+91 90000 00003','Takes bots from me and resells them. Bulk rate.');
+  const d=mk('Sana (example)','t-clients',1,300,-3,27,'sana.example@mail.com','demo-pass-4','46620871','+91 90000 00004','');
+  const sales=[
+    {id:uid('s'),clientId:b.id,name:b.name,date:t,days:30,amount:550},
+    {id:uid('s'),clientId:c.id,name:c.name,date:t,days:30,amount:1200}
+  ];
+  return {clients:[a,b,c,d],sales};
+}
+function loadExamples(){const s=sampleData();state.clients=s.clients;state.sales=s.sales;state.examples=true}
+
+/* ---------- local mirror and prefs ---------- */
+function mirror(){
+  if(state.examples)return;
+  try{localStorage.setItem(LS_KEY,JSON.stringify({clients:state.clients,sales:state.sales,settings:state.settings}))}catch(e){}
+}
+function readMirror(){
+  try{
+    const r=localStorage.getItem(LS_KEY);
+    if(!r)return null;
+    const o=JSON.parse(r);
+    return {clients:Array.isArray(o.clients)?o.clients:[],sales:Array.isArray(o.sales)?o.sales:[],settings:o.settings||{}};
+  }catch(e){return null}
+}
+function mergeSettings(s){
+  const d={soonDays:3,template:DEFAULT_TPL,lastBackup:null};
+  const out=Object.assign(d,s||{});
+  out.soonDays=Math.min(30,Math.max(1,Math.round(num(out.soonDays))||3));
+  if(!out.template)out.template=DEFAULT_TPL;
+  let tg=Array.isArray(s&&s.tags)?s.tags:null;
+  if(!tg)tg=DEFAULT_TAGS;
+  out.tags=tg.filter(t=>t&&t.name&&/^[A-Za-z0-9_-]{1,60}$/.test(String(t.id))).map(t=>({id:String(t.id),name:String(t.name).slice(0,28),color:((Math.round(num(t.color))%6)+6)%6}));
+  state.settings=out;
+}
+function savePrefs(){try{localStorage.setItem(LS_PREFS,JSON.stringify({sort:ui.sort,group:ui.group}))}catch(e){}}
+function loadPrefs(){
+  try{
+    const p=JSON.parse(localStorage.getItem(LS_PREFS)||'null');
+    if(p){if(['soon','late','name','new','bots'].includes(p.sort))ui.sort=p.sort;ui.group=!!p.group}
+  }catch(e){}
+}
+
+/* ---------- persistence ---------- */
+function clean(o){return JSON.parse(JSON.stringify(o))}
+async function cw(fn){
+  if(state.examples)return;
+  mirror();
+  if(!cloud.col||cloud.failed)return;
+  try{
+    if(!cloud.hasSettings){cloud.hasSettings=true;await cloud.col.doc('settings').set(Object.assign({kind:'settings'},clean(state.settings)))}
+    await fn();
+  }catch(e){
+    console.error(e);
+    cloud.failed=true;renderStatus();renderBanners();
+    toast('Could not save to your account. Changes are kept in this browser.');
+  }
+}
+const putClient=c=>cw(()=>cloud.col.doc(c.id).set(Object.assign({kind:'client'},clean(c))));
+const putSale=s=>cw(()=>cloud.col.doc(s.id).set(Object.assign({kind:'sale'},clean(s))));
+const putSettings=()=>cw(()=>cloud.col.doc('settings').set(Object.assign({kind:'settings'},clean(state.settings))));
+const delDoc=id=>cw(()=>cloud.col.doc(id).delete());
+let settingsChain=Promise.resolve();
+function queueSettings(){settingsChain=settingsChain.then(putSettings).catch(()=>{})}
+
+function onSnap(snap){
+  const clients=[],sales=[];let settings=null;
+  snap.docs.forEach(d=>{
+    const x=d.data();if(!x)return;
+    if(x.kind==='client'){const c=Object.assign({},x);delete c.kind;c.id=d.id;clients.push(c)}
+    else if(x.kind==='sale'){const s=Object.assign({},x);delete s.kind;s.id=d.id;sales.push(s)}
+    else if(x.kind==='settings'){settings=Object.assign({},x);delete settings.kind}
+  });
+  if(snap.empty){
+    if(snap.metadata&&snap.metadata.fromCache)return;
+    if(cloud.migrating)return;
+    const m=readMirror();
+    if(m&&(m.clients.length||m.sales.length)){migrate(m);return}
+    if(!m){if(!state.examples)loadExamples()}
+    else{state.clients=[];state.sales=[];state.examples=false;mergeSettings(m.settings)}
+    renderAll();return;
+  }
+  state.examples=false;
+  state.clients=clients;state.sales=sales;
+  if(settings){cloud.hasSettings=true;mergeSettings(settings)}
+  mirror();
+  renderAll();
+}
+async function migrate(m){
+  cloud.migrating=true;
+  state.examples=false;state.clients=m.clients;state.sales=m.sales;mergeSettings(m.settings);renderAll();
+  try{
+    cloud.hasSettings=true;
+    await cloud.col.doc('settings').set(Object.assign({kind:'settings'},clean(state.settings)));
+    for(const c of m.clients)await cloud.col.doc(c.id).set(Object.assign({kind:'client'},clean(c)));
+    for(const s of m.sales)await cloud.col.doc(s.id).set(Object.assign({kind:'sale'},clean(s)));
+  }catch(e){console.error(e);cloud.failed=true;renderStatus();renderBanners()}
+  cloud.migrating=false;
+}
+
+/* ---------- toast ---------- */
+let toastTimer=null;
+function toast(msg,opts){
+  const el=$('#toast');opts=opts||{};
+  clearTimeout(toastTimer);
+  el.classList.remove('out');
+  el.innerHTML='<span></span>';
+  el.firstChild.textContent=msg;
+  if(opts.undo){
+    const b=document.createElement('button');b.type='button';b.textContent='Undo';
+    b.addEventListener('click',()=>{hideToast();opts.undo()});
+    el.appendChild(b);
+  }
+  el.hidden=false;
+  el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  toastTimer=setTimeout(hideToast,opts.undo?7000:3600);
+}
+function hideToast(){
+  const el=$('#toast');if(el.hidden)return;
+  el.classList.add('out');
+  setTimeout(()=>{el.hidden=true;el.classList.remove('out')},200);
+}
+
+/* ---------- sheets ---------- */
+let lastFocus=null;
+function openSheet(title,body){
+  closeSheet(true);
+  lastFocus=document.activeElement;
+  const o=document.createElement('div');o.className='overlay';
+  o.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><div class="sheet-head"><h2 id="sheetTitle"></h2><button type="button" class="icon-btn" data-close aria-label="Close">'+ICON.close+'</button></div><div id="sheetBody"></div></div>';
+  $('#sheetTitle',o).textContent=title;
+  $('#sheetBody',o).innerHTML=body;
+  o.addEventListener('click',e=>{if(e.target===o||e.target.closest('[data-close]'))closeSheet()});
+  $('#overlayRoot').appendChild(o);
+  document.body.classList.add('lock');
+  return $('.sheet',o);
+}
+function closeSheet(instant){
+  const o=$('#overlayRoot .overlay');
+  if(!o)return;
+  document.body.classList.remove('lock');
+  const done=()=>{o.remove();if(lastFocus&&lastFocus.focus&&document.contains(lastFocus)){try{lastFocus.focus()}catch(e){}}};
+  if(instant===true){o.remove();return}
+  o.classList.add('out');setTimeout(done,190);
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeSheet();
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.c-top')){e.preventDefault();e.target.click()}
+});
+
+/* ---------- copy ---------- */
+async function copyText(text,btn){
+  let ok=false;
+  try{await navigator.clipboard.writeText(text);ok=true}catch(e){ok=false}
+  if(ok){
+    if(btn){const old=btn.textContent;btn.textContent='Copied';btn.classList.add('done');setTimeout(()=>{btn.textContent=old;btn.classList.remove('done')},1300)}
+    else toast('Copied');
+    return;
+  }
+  const sh=openSheet('Copy this text','<p class="txt">Your browser blocked automatic copying. Select the text below and copy it.</p><textarea id="manualCopy" readonly rows="5"></textarea>');
+  const ta=$('#manualCopy',sh);ta.value=text;ta.focus();ta.select();
+}
+function reminderText(c){
+  const i=info(c);
+  return (state.settings.template||DEFAULT_TPL)
+    .replace(/\{name\}/g,c.name.replace(/\s*\(example\)$/,''))
+    .replace(/\{bots\}/g,plural(num(c.bots)||1,'account'))
+    .replace(/\{date\}/g,fmtDate(c.expiry))
+    .replace(/\{when\}/g,i.when)
+    .replace(/\{days\}/g,String(Math.abs(i.d)))
+    .replace(/\{rate\}/g,num(c.rate)>0?money(c.rate):'');
+}
+
+/* ---------- rendering ---------- */
+function setNum(id,val,fmt){
+  const el=document.getElementById(id);if(!el)return;
+  fmt=fmt||(v=>String(Math.round(v)));
+  const from=el._v==null?0:el._v;
+  if(from===val){el.textContent=fmt(val);return}
+  el._v=val;
+  if(reduceMotion()){el.textContent=fmt(val);return}
+  const t0=performance.now(),dur=700;
+  cancelAnimationFrame(el._raf);
+  const step=now=>{
+    const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);
+    el.textContent=fmt(from+(val-from)*e);
+    if(p<1)el._raf=requestAnimationFrame(step);else el.textContent=fmt(val);
+  };
+  el._raf=requestAnimationFrame(step);
+}
+function renderStatus(){
+  const cloudOn=cloud.col&&!cloud.failed;
+  $('#syncText').textContent=cloudOn?'Saved to your account':'Saved in this browser only';
+  $('#syncDot').className='dot live '+(cloudOn?'ok':'warn');
+  $('#todayText').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  $('#foot').textContent=cloudOn
+    ?'Your ledger is saved to your Claude account and stays in step on every device you sign in on. Download Excel now and then to keep a copy of your own.'
+    :'Everything is saved only in this phone’s browser. Clearing browser data erases it, so download Excel regularly as your backup.';
+}
+function renderBanners(){
+  const cloudOn=cloud.col&&!cloud.failed;
+  let h='';
+  if(state.examples){
+    h+='<div class="banner info"><p><b>These are example clients</b> so you can see how the ledger works. Add your first client and they disappear.</p><button class="btn sm" type="button" data-act="clear-examples">Remove examples now</button></div>';
+  }else if(!cloudOn&&!state.settings.lastBackup){
+    h+='<div class="banner"><p><b>You have not downloaded a backup yet.</b> Download Excel so you never lose your list.</p><button class="btn sm" type="button" data-act="excel">Download now</button></div>';
+  }
+  $('#banners').innerHTML=h;
+}
+function renderStats(){
+  let ending=0,expired=0,bots=0;
+  state.clients.forEach(c=>{const i=info(c);if(i.kind==='soon')ending++;if(i.kind==='expired')expired++;else bots+=num(c.bots)||1});
+  const m=todayISO().slice(0,7);
+  const sold=state.sales.filter(s=>s.date&&s.date.slice(0,7)===m).reduce((a,s)=>a+num(s.amount),0);
+  setNum('stClients',state.clients.length);
+  $('#stBots').textContent=plural(bots,'bot')+' running';
+  setNum('stSoon',ending);
+  $('#stSoonLab').textContent='Ending in '+plural(Math.max(1,num(state.settings.soonDays)||3),'day');
+  setNum('stExpired',expired);
+  setNum('stSold',sold,v=>money(v));
+  $('#stMonth').textContent=new Date().toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+}
+function tagFiltered(){
+  return state.clients.filter(c=>ui.tag==='all'||(ui.tag==='none'?effTag(c)==='':effTag(c)===ui.tag));
+}
+function counts(){
+  const r={all:0,active:0,soon:0,expired:0};
+  tagFiltered().forEach(c=>{r.all++;const k=info(c).kind;if(k==='expired')r.expired++;else{r.active++;if(k==='soon')r.soon++}});
+  return r;
+}
+function renderFilters(){
+  const c=counts();
+  $('#cAll').textContent=c.all;$('#cActive').textContent=c.active;$('#cSoon').textContent=c.soon;$('#cExpired').textContent=c.expired;
+  $$('#filters .fchip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.f===ui.filter)));
+}
+function renderTagBar(){
+  if(ui.tag!=='all'&&ui.tag!=='none'&&!tagById(ui.tag))ui.tag='all';
+  const cnt=id=>state.clients.filter(c=>effTag(c)===id).length;
+  const none=cnt('');
+  let h='<button class="fchip" type="button" data-t="all" aria-pressed="'+(ui.tag==='all')+'">All tags <small>'+state.clients.length+'</small></button>';
+  tags().forEach(t=>{h+='<button class="fchip" type="button" data-t="'+esc(t.id)+'" aria-pressed="'+(ui.tag===t.id)+'">'+tagDot(t)+esc(t.name)+' <small>'+cnt(t.id)+'</small></button>'});
+  if(none&&tags().length)h+='<button class="fchip" type="button" data-t="none" aria-pressed="'+(ui.tag==='none')+'">No tag <small>'+none+'</small></button>';
+  h+='<button class="fchip ghost" type="button" data-t="__manage">+ Tags</button>';
+  $('#tagbar').innerHTML=h;
+  $('#btnGroup').setAttribute('aria-pressed',String(ui.group));
+}
+function visible(){
+  const q=ui.q.trim().toLowerCase();
+  let a=tagFiltered().map(c=>({c,i:info(c)}));
+  if(ui.filter==='active')a=a.filter(x=>x.i.kind!=='expired');
+  else if(ui.filter==='soon')a=a.filter(x=>x.i.kind==='soon');
+  else if(ui.filter==='expired')a=a.filter(x=>x.i.kind==='expired');
+  if(q)a=a.filter(x=>{const t=tagById(effTag(x.c));return [x.c.name,x.c.email,x.c.gameId,x.c.contact,x.c.notes,t?t.name:''].join(' ').toLowerCase().includes(q)});
+  const by={
+    soon:(p,q)=>p.c.expiry.localeCompare(q.c.expiry)||p.c.name.localeCompare(q.c.name),
+    late:(p,q)=>q.c.expiry.localeCompare(p.c.expiry)||p.c.name.localeCompare(q.c.name),
+    name:(p,q)=>p.c.name.localeCompare(q.c.name),
+    new:(p,q)=>num(q.c.created)-num(p.c.created),
+    bots:(p,q)=>(num(q.c.bots)||1)-(num(p.c.bots)||1)||p.c.name.localeCompare(q.c.name)
+  };
+  a.sort(by[ui.sort]||by.soon);
+  return a;
+}
+function hue(name){let h=0;for(let i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))>>>0;return h%5}
+function credRow(label,valueHtml,actions){
+  return '<div class="row"><span class="k">'+label+'</span><span class="v">'+valueHtml+'</span><span class="ra">'+actions+'</span></div>';
+}
+function cardHtml(x,idx){
+  const c=x.c,i=x.i,id=esc(c.id),isNew=!ui.seen.has(c.id),bots=num(c.bots)||1;
+  const open=ui.open.has(c.id),picked=ui.picked.has(c.id);
+  const t=tagById(effTag(c));
+  let rows='';
+  if(c.email)rows+=credRow('Email',esc(c.email),'<button class="mini" type="button" data-act="copy" data-f="email" data-id="'+id+'">Copy</button>');
+  if(c.password){
+    const show=ui.shown.has(c.id);
+    rows+=credRow('Password',show?esc(c.password):'•••••••••',
+      '<button class="mini" type="button" data-act="pw" data-id="'+id+'">'+(show?'Hide':'Show')+'</button><button class="mini" type="button" data-act="copy" data-f="password" data-id="'+id+'">Copy</button>');
+  }
+  if(c.gameId)rows+=credRow('Game ID',esc(c.gameId),'<button class="mini" type="button" data-act="copy" data-f="gameId" data-id="'+id+'">Copy</button>');
+  if(c.contact)rows+=credRow('Contact',esc(c.contact),'<button class="mini" type="button" data-act="copy" data-f="contact" data-id="'+id+'">Copy</button>');
+  const emptyMsg=(!rows&&!c.notes)?'<p class="empty-creds">No login details or notes saved yet. Tap Edit to add them.</p>':'';
+  const cls=['card',i.kind];
+  if(open)cls.push('open');if(picked)cls.push('picked');if(isNew)cls.push('enter');if(ui.flash===c.id)cls.push('flash');
+  return '<article class="'+cls.join(' ')+'" data-id="'+id+'" style="--i:'+Math.min(idx,8)+'">'+
+    '<div class="c-top" role="button" tabindex="0" data-act="toggle" data-id="'+id+'" aria-expanded="'+open+'">'+
+      (ui.select?'<span class="pick" aria-hidden="true">'+ICON.check+'</span>':'')+
+      '<div class="avatar av'+hue(c.name)+'" aria-hidden="true">'+esc((c.name.trim()[0]||'?').toUpperCase())+'</div>'+
+      '<div class="who"><h3>'+esc(c.name)+'</h3><p>'+(t?tagChip(t):'')+'<span>'+plural(bots,'bot account')+'</span></p></div>'+
+      '<span class="chev"><span class="cs">Details</span><span class="ch">Hide</span>'+ICON.chev+'</span>'+
+    '</div>'+
+    '<div class="stat-line"><span class="pill '+i.kind+'"><i></i>'+esc(i.label)+'</span><span class="exp">Expires <b>'+fmtDate(c.expiry)+'</b></span></div>'+
+    '<div class="bar" role="img" aria-label="'+esc(i.label)+'"><i style="--w:'+i.pct+'%"></i></div>'+
+    '<div class="renew"><span>Renew</span>'+
+      '<button class="mini" type="button" data-act="renew" data-days="7" data-id="'+id+'">+7 days</button>'+
+      '<button class="mini" type="button" data-act="renew" data-days="30" data-id="'+id+'">+30 days</button>'+
+      (num(c.rate)>0?'<span class="rate">'+money(c.rate)+' / 30 days</span>':'')+'</div>'+
+    '<div class="details"><div class="inner">'+
+      (rows?'<div class="creds">'+rows+'</div>':'')+
+      (c.notes?'<div class="note">'+esc(c.notes)+'</div>':'')+emptyMsg+
+      '<div class="more"><button class="btn sm" type="button" data-act="reminder" data-id="'+id+'">Copy reminder</button>'+
+      '<button class="btn sm" type="button" data-act="tag" data-id="'+id+'">Tag</button>'+
+      '<button class="btn sm" type="button" data-act="edit" data-id="'+id+'">Edit</button>'+
+      '<button class="btn sm danger" type="button" data-act="delete" data-id="'+id+'">Delete</button></div>'+
+    '</div></div>'+
+  '</article>';
+}
+function renderList(){
+  const vis=visible();
+  const list=$('#list');
+  if(!state.clients.length){
+    list.innerHTML='<div class="empty"><h3>Your roll is empty</h3><p>Add your first client to start tracking bot accounts and expiry dates.</p><button class="btn gold" type="button" data-act="add">'+ICON.plus+'Add client</button></div>';
+  }else if(!vis.length){
+    list.innerHTML='<div class="empty"><h3>No clients match</h3><p>Try a different search or switch the filters back to All.</p></div>';
+  }else if(ui.group){
+    let h='',n=0;
+    const order=tags().map(t=>t.id).concat(['']);
+    order.forEach(gid=>{
+      const items=vis.filter(x=>effTag(x.c)===gid);
+      if(!items.length)return;
+      const t=tagById(gid);
+      h+='<div class="group-head">'+(t?tagChip(t):'<span class="tagchip tcn">No tag</span>')+'<span class="n">'+plural(items.length,'client')+'</span></div>';
+      items.forEach(x=>{h+=cardHtml(x,n++)});
+    });
+    list.innerHTML=h;
+  }else{
+    list.innerHTML=vis.map((x,i)=>cardHtml(x,i)).join('');
+  }
+  vis.forEach(x=>ui.seen.add(x.c.id));
+  ui.flash=null;
+  $('#listCount').textContent=state.clients.length?('Showing '+vis.length+' of '+state.clients.length):'';
+  $('#btnExpand').hidden=!vis.length;
+  syncExpandBtn();
+}
+function syncExpandBtn(){
+  const cards=$$('#list .card');
+  const all=cards.length&&cards.every(c=>c.classList.contains('open'));
+  $('#btnExpand').textContent=all?'Collapse all':'Expand all';
+}
+function renderSelbar(){
+  const el=$('#selbar');
+  el.hidden=!ui.select;
+  document.body.classList.toggle('selecting',ui.select);
+  $('#btnSelect').setAttribute('aria-pressed',String(ui.select));
+  $('#btnSelect').lastChild.textContent=ui.select?'Cancel select':'Select';
+  if(!ui.select)return;
+  $('#selCount').textContent=ui.picked.size+' selected';
+  $('#selMove').disabled=ui.picked.size===0;
+}
+function renderAll(){
+  ui.day=todayISO();
+  renderStatus();renderBanners();renderStats();renderTagBar();renderFilters();renderList();renderSelbar();
+}
+
+/* ---------- actions on clients ---------- */
+function findClient(id){return state.clients.find(c=>c.id===id)}
+function leaveExamples(){if(state.examples){state.clients=[];state.sales=[];state.examples=false;ui.seen.clear();ui.open.clear()}}
+function cardEl(id){return $('#list .card[data-id="'+(window.CSS&&CSS.escape?CSS.escape(id):id)+'"]')}
+
+async function renew(id,days){
+  const c=findClient(id);if(!c)return;
+  const prev=clean(c),t=todayISO(),wasExpired=c.expiry<t;
+  c.expiry=addDays(wasExpired?t:c.expiry,days);
+  if(wasExpired)c.start=t;
+  let sale=null;
+  if(num(c.rate)>0){
+    sale={id:uid('s'),clientId:c.id,name:c.name,date:t,days,amount:Math.round(num(c.rate)*days/30)};
+    state.sales.push(sale);
+  }
+  ui.flash=id;renderAll();
+  toast(c.name+' renewed to '+fmtDate(c.expiry)+(sale?' · '+money(sale.amount)+' recorded':''),{undo:async()=>{
+    const idx=state.clients.findIndex(x=>x.id===id);
+    if(idx>=0)state.clients[idx]=prev;
+    if(sale){state.sales=state.sales.filter(s=>s.id!==sale.id)}
+    ui.flash=id;renderAll();
+    await putClient(prev);
+    if(sale)await delDoc(sale.id);
+  }});
+  await putClient(c);
+  if(sale)await putSale(sale);
+}
+function removeClient(id){
+  const c=findClient(id);if(!c)return;
+  const el=cardEl(id);
+  if(el)el.classList.add('leaving');
+  setTimeout(async()=>{
+    state.clients=state.clients.filter(x=>x.id!==id);
+    ui.shown.delete(id);ui.open.delete(id);ui.picked.delete(id);
+    renderAll();
+    toast(c.name+' deleted',{undo:async()=>{
+      state.clients.push(c);ui.seen.delete(c.id);renderAll();await putClient(c);
+    }});
+    await delDoc(id);
+  },el?220:0);
+}
+function togglePick(id,card){
+  if(ui.picked.has(id))ui.picked.delete(id);else ui.picked.add(id);
+  if(card)card.classList.toggle('picked',ui.picked.has(id));
+  renderSelbar();
+}
+function setSelect(on){
+  ui.select=on;ui.picked.clear();
+  renderList();renderSelbar();
+}
+async function applyTag(ids,tagId){
+  const prev=ids.map(id=>{const c=findClient(id);return c?{id,had:Object.prototype.hasOwnProperty.call(c,'tag'),tag:c.tag}:null}).filter(Boolean);
+  if(!prev.length)return;
+  leaveExamples();
+  prev.forEach(p=>{const c=findClient(p.id);if(c)c.tag=tagId});
+  closeSheet();
+  if(ui.select){ui.select=false;ui.picked.clear()}
+  renderAll();
+  const t=tagById(tagId);
+  toast(plural(prev.length,'client')+' moved to '+(t?t.name:'No tag'),{undo:async()=>{
+    prev.forEach(p=>{const c=findClient(p.id);if(c){if(p.had)c.tag=p.tag;else delete c.tag}});
+    renderAll();
+    for(const p of prev){const c=findClient(p.id);if(c)await putClient(c)}
+  }});
+  for(const p of prev){const c=findClient(p.id);if(c)await putClient(c)}
+}
+function openMoveSheet(ids){
+  let h='<p class="txt">Choose a tag for '+plural(ids.length,'client')+'.</p><div class="optlist">';
+  tags().forEach(t=>{h+='<button class="pickopt" type="button" data-tag="'+esc(t.id)+'">'+tagDot(t)+esc(t.name)+'</button>'});
+  h+='<button class="pickopt" type="button" data-tag="">No tag</button></div>'+
+    '<h3 class="sec">Or create a new tag</h3><div class="inline"><input type="text" id="mv-new" maxlength="28" placeholder="For example, VIP"><button type="button" class="btn sm gold" id="mv-add" style="flex:none">Create and move</button></div>';
+  const sh=openSheet('Move to tag',h);
+  sh.addEventListener('click',e=>{const b=e.target.closest('[data-tag]');if(b)applyTag(ids,b.dataset.tag)});
+  $('#mv-add',sh).addEventListener('click',()=>{
+    const t=createTag($('#mv-new',sh).value);
+    if(t)applyTag(ids,t.id);else $('#mv-new',sh).focus();
+  });
+}
+function openTagManager(){
+  const rows=()=>tags().map(t=>{
+    const n=state.clients.filter(c=>effTag(c)===t.id).length;
+    return '<div class="tagrow" data-id="'+esc(t.id)+'"><button class="swatch" type="button" data-sw="'+esc(t.id)+'" aria-label="Change colour of '+esc(t.name)+'"><i style="background:var(--tg'+(t.color%6)+'-fg)"></i></button>'+
+      '<input type="text" maxlength="28" value="'+esc(t.name)+'" data-rn="'+esc(t.id)+'" aria-label="Tag name"><small>'+n+'</small>'+
+      '<button class="icon-btn" type="button" data-del="'+esc(t.id)+'" aria-label="Delete tag '+esc(t.name)+'">'+ICON.close+'</button></div>';
+  }).join('')||'<p class="txt">No tags yet. Add one below, for example Suppliers or VIP.</p>';
+  const sh=openSheet('Tags','<p class="txt">Tags group your clients. Tap a colour to change it. Deleting a tag only removes the label and keeps the clients.</p><div id="tagList">'+rows()+'</div>'+
+    '<h3 class="sec">New tag</h3><div class="inline"><input type="text" id="nt-name" maxlength="28" placeholder="Tag name"><button type="button" class="btn sm gold" id="nt-add" style="flex:none">Add tag</button></div>');
+  const refresh=()=>{$('#tagList',sh).innerHTML=rows();renderAll()};
+  sh.addEventListener('click',async e=>{
+    const sw=e.target.closest('[data-sw]'),del=e.target.closest('[data-del]');
+    if(sw){const t=tagById(sw.dataset.sw);if(t){t.color=(t.color+1)%6;refresh();queueSettings()}}
+    else if(del){
+      const id=del.dataset.del;
+      const affected=state.clients.filter(c=>effTag(c)===id);
+      state.settings.tags=tags().filter(t=>t.id!==id);
+      affected.forEach(c=>{c.tag=''});
+      if(ui.tag===id)ui.tag='all';
+      refresh();queueSettings();
+      for(const c of affected)await putClient(c);
+    }
+  });
+  sh.addEventListener('change',e=>{
+    const inp=e.target.closest('[data-rn]');if(!inp)return;
+    const t=tagById(inp.dataset.rn);if(!t)return;
+    const name=inp.value.trim().slice(0,28);
+    if(name&&!tags().some(x=>x.id!==t.id&&x.name.toLowerCase()===name.toLowerCase())){t.name=name;queueSettings();renderAll()}
+    else inp.value=t.name;
+  });
+  const add=()=>{
+    const inp=$('#nt-name',sh);
+    if(!inp.value.trim()){inp.focus();return}
+    createTag(inp.value);inp.value='';refresh();inp.focus();
+  };
+  $('#nt-add',sh).addEventListener('click',add);
+  $('#nt-name',sh).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();add()}});
+}
+
+/* ---------- add / edit form ---------- */
+function clientForm(c,selTag){
+  const isNew=!c;
+  const t=todayISO();
+  c=c||{name:'',bots:1,email:'',password:'',gameId:'',contact:'',rate:'',expiry:addDays(t,30),notes:''};
+  return '<form id="clientForm" class="form" novalidate>'+
+    '<div class="fld full"><label for="f-name">Client name</label><input type="text" id="f-name" autocomplete="off" value="'+esc(c.name)+'" placeholder="For example, Rahul"></div>'+
+    '<div class="fld full"><span class="lbl">Tag</span><div class="quick" id="f-tags"></div>'+
+      '<div class="inline" id="newTagRow" hidden><input type="text" id="f-newtag" maxlength="28" placeholder="New tag name"><button type="button" class="btn sm gold" id="f-addtag" style="flex:none">Add tag</button></div></div>'+
+    '<div class="fld"><label for="f-bots">Bot accounts</label><input type="number" id="f-bots" inputmode="numeric" min="1" step="1" value="'+esc(c.bots||1)+'"></div>'+
+    '<div class="fld"><label for="f-game">Game ID</label><input type="text" id="f-game" inputmode="numeric" autocomplete="off" value="'+esc(c.gameId)+'"></div>'+
+    '<div class="fld full"><label for="f-email">Game account email</label><input type="email" id="f-email" autocomplete="off" value="'+esc(c.email)+'" placeholder="name@gmail.com"></div>'+
+    '<div class="fld full"><label for="f-pass">Game account password</label><div class="inline"><input type="password" id="f-pass" autocomplete="off" value="'+esc(c.password)+'"><button type="button" class="btn sm" id="f-showpass" style="flex:none">Show</button></div></div>'+
+    '<div class="fld full"><label for="f-contact">Contact</label><input type="text" id="f-contact" autocomplete="off" value="'+esc(c.contact)+'" placeholder="WhatsApp or phone"></div>'+
+    '<div class="fld"><label for="f-rate">Rate per 30 days (₹)</label><input type="number" id="f-rate" inputmode="decimal" min="0" step="1" value="'+esc(c.rate)+'" placeholder="300"></div>'+
+    '<div class="fld"><label for="f-expiry">Expiry date</label><input type="date" id="f-expiry" value="'+esc(c.expiry)+'"></div>'+
+    '<div class="fld full"><span class="lbl">Set expiry from today</span><div class="quick"><button type="button" class="mini" data-q="7">+7 days</button><button type="button" class="mini" data-q="30">+30 days</button><button type="button" class="mini" data-q="60">+60 days</button><button type="button" class="mini" data-q="90">+90 days</button></div></div>'+
+    (isNew?'<div class="fld full" id="saleWrap" hidden><label class="check" for="f-sale"><input type="checkbox" id="f-sale" checked><span id="saleLabel"></span></label></div>':'')+
+    '<div class="fld full"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Payment method, guild, anything to remember">'+esc(c.notes)+'</textarea></div>'+
+    '<p class="err" id="formErr" hidden></p>'+
+    '<div class="form-actions"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn gold">'+(isNew?'Add client':'Save changes')+'</button></div>'+
+  '</form>';
+}
+function openClientForm(id){
+  const c=id?findClient(id):null;
+  let selTag=c?effTag(c):((ui.tag!=='all'&&ui.tag!=='none'&&tagById(ui.tag))?ui.tag:'');
+  const sh=openSheet(c?'Edit client':'Add client',clientForm(c,selTag));
+  const form=$('#clientForm',sh),err=$('#formErr',sh);
+  const drawTags=()=>{
+    let h='<button type="button" class="fchip sm" data-ft="" aria-pressed="'+(selTag==='')+'">No tag</button>';
+    tags().forEach(t=>{h+='<button type="button" class="fchip sm" data-ft="'+esc(t.id)+'" aria-pressed="'+(selTag===t.id)+'">'+tagDot(t)+esc(t.name)+'</button>'});
+    h+='<button type="button" class="fchip sm ghost" data-ft="__new">+ New tag</button>';
+    $('#f-tags',sh).innerHTML=h;
+  };
+  drawTags();
+  $('#f-tags',sh).addEventListener('click',e=>{
+    const b=e.target.closest('[data-ft]');if(!b)return;
+    if(b.dataset.ft==='__new'){const r=$('#newTagRow',sh);r.hidden=!r.hidden;if(!r.hidden)$('#f-newtag',sh).focus();return}
+    selTag=b.dataset.ft;drawTags();
+  });
+  const addTag=()=>{
+    const t=createTag($('#f-newtag',sh).value);
+    if(!t)return;
+    selTag=t.id;$('#f-newtag',sh).value='';$('#newTagRow',sh).hidden=true;drawTags();renderTagBar();
+  };
+  $('#f-addtag',sh).addEventListener('click',addTag);
+  $('#f-newtag',sh).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addTag()}});
+  const syncSale=()=>{
+    const wrap=$('#saleWrap',sh);if(!wrap)return;
+    const rate=num($('#f-rate',sh).value),exp=$('#f-expiry',sh).value;
+    const days=exp?Math.max(0,diffDays(todayISO(),exp)):0;
+    wrap.hidden=!(rate>0&&days>0);
+    $('#saleLabel',sh).textContent='Record this as a sale of '+money(Math.round(rate*days/30))+' ('+plural(days,'day')+')';
+  };
+  syncSale();
+  $('#f-rate',sh).addEventListener('input',syncSale);
+  $('#f-expiry',sh).addEventListener('input',syncSale);
+  $('#f-showpass',sh).addEventListener('click',e=>{
+    const p=$('#f-pass',sh);const show=p.type==='password';p.type=show?'text':'password';e.currentTarget.textContent=show?'Hide':'Show';
+  });
+  $$('[data-q]',sh).forEach(b=>b.addEventListener('click',()=>{$('#f-expiry',sh).value=addDays(todayISO(),Number(b.dataset.q));syncSale()}));
+  setTimeout(()=>{if(!c)$('#f-name',sh).focus()},120);
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const v=sel=>$(sel,sh).value.trim();
+    const name=v('#f-name'),email=v('#f-email'),expiry=v('#f-expiry');
+    const fail=m=>{err.textContent=m;err.hidden=false;err.scrollIntoView({block:'nearest'})};
+    if(!name)return fail('Enter the client name.');
+    if(email&&!/^\S+@\S+\.\S+$/.test(email))return fail('That email address does not look right. Check it or clear the field.');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(expiry))return fail('Pick an expiry date.');
+    const data={
+      name,tag:selTag,bots:Math.max(1,Math.round(num($('#f-bots',sh).value))||1),
+      email,password:$('#f-pass',sh).value,gameId:v('#f-game'),contact:v('#f-contact'),
+      rate:v('#f-rate')===''?'':Math.max(0,num($('#f-rate',sh).value)),expiry,notes:v('#f-notes')
+    };
+    const t=todayISO();
+    if(c){
+      Object.assign(c,data);
+      if(!c.start||c.start>c.expiry)c.start=c.expiry<t?c.expiry:t;
+      closeSheet();ui.flash=c.id;ui.open.add(c.id);renderAll();toast('Saved '+c.name);
+      await putClient(c);
+    }else{
+      leaveExamples();
+      const nc=Object.assign({id:uid('c'),start:expiry<t?expiry:t,created:Date.now()},data);
+      state.clients.push(nc);
+      let sale=null;
+      const saleBox=$('#f-sale',sh),wrap=$('#saleWrap',sh);
+      if(saleBox&&saleBox.checked&&wrap&&!wrap.hidden){
+        const days=Math.max(0,diffDays(t,expiry));
+        sale={id:uid('s'),clientId:nc.id,name:nc.name,date:t,days,amount:Math.round(num(nc.rate)*days/30)};
+        state.sales.push(sale);
+      }
+      closeSheet();ui.flash=nc.id;renderAll();
+      toast(name+' added'+(sale?' · '+money(sale.amount)+' recorded':''));
+      await putClient(nc);
+      if(sale)await putSale(sale);
+    }
+  });
+}
+
+/* ---------- settings ---------- */
+function openSettings(){
+  const cloudOn=cloud.col&&!cloud.failed;
+  const last=state.settings.lastBackup?fmtDate(state.settings.lastBackup):'Never';
+  const body='<p class="txt">'+(cloudOn?'Your ledger is saved to your Claude account and stays in step across your devices.':'Your ledger is saved only in this browser. Download Excel often.')+'</p>'+
+    '<h3 class="sec">Share a data file</h3>'+
+    '<p class="txt">Export a data file to send to someone, or import one you received. Importing adds new clients and updates any client whose expiry date is later in the file.</p>'+
+    '<div class="toolbar" style="margin:0 0 6px"><button class="btn" type="button" data-act="export-data">'+ICON.down+'Export data file</button><button class="btn" type="button" data-act="import">'+ICON.upload+'Import data file</button></div>'+
+    '<h3 class="sec">Excel backup</h3>'+
+    '<p class="txt">Last Excel copy: <b style="color:var(--fg)">'+esc(last)+'</b></p>'+
+    '<div class="toolbar" style="margin:0 0 6px"><button class="btn" type="button" data-act="excel">'+ICON.down+'Download Excel</button><button class="btn" type="button" data-act="import">'+ICON.upload+'Import from Excel</button></div>'+
+    '<h3 class="sec">Reminders</h3>'+
+    '<div class="form"><div class="fld"><label for="s-soon">Ending soon window (days)</label><input type="number" id="s-soon" inputmode="numeric" min="1" max="30" value="'+esc(state.settings.soonDays)+'"></div>'+
+    '<div class="fld full"><label for="s-tpl">Reminder message</label><textarea id="s-tpl" rows="4">'+esc(state.settings.template)+'</textarea><span class="hint">Placeholders: {name} {bots} {date} {when} {days} {rate}</span></div>'+
+    '<div class="form-actions"><button type="button" class="btn" id="s-reset">Reset message</button><button type="button" class="btn gold" id="s-save">Save settings</button></div></div>'+
+    '<h3 class="sec">Danger zone</h3>'+
+    '<button class="btn danger" type="button" id="s-wipe">Delete all clients and sales</button>';
+  const sh=openSheet('Backup & settings',body);
+  $('#s-reset',sh).addEventListener('click',()=>{$('#s-tpl',sh).value=DEFAULT_TPL});
+  $('#s-save',sh).addEventListener('click',async()=>{
+    state.settings.soonDays=Math.min(30,Math.max(1,Math.round(num($('#s-soon',sh).value))||3));
+    state.settings.template=$('#s-tpl',sh).value.trim()||DEFAULT_TPL;
+    closeSheet();renderAll();toast('Settings saved');
+    await putSettings();
+  });
+  let armed=false,tm=null;
+  const wipe=$('#s-wipe',sh);
+  wipe.addEventListener('click',async()=>{
+    if(!armed){armed=true;wipe.textContent='Tap again to delete everything';tm=setTimeout(()=>{armed=false;wipe.textContent='Delete all clients and sales'},4000);return}
+    clearTimeout(tm);
+    const ids=state.clients.map(c=>c.id).concat(state.sales.map(s=>s.id));
+    const wasExamples=state.examples;
+    state.clients=[];state.sales=[];state.examples=false;ui.seen.clear();ui.open.clear();ui.picked.clear();
+    closeSheet();renderAll();toast('Everything deleted');
+    mirror();
+    if(!wasExamples)for(const id of ids)await delDoc(id);
+  });
+}
+
+/* ---------- Excel ---------- */
+function buildWorkbook(){
+  const clients=state.clients.map(c=>{const i=info(c),t=tagById(effTag(c));return {
+    'Name':c.name,'Tag':t?t.name:'','Bot accounts':num(c.bots)||1,'Email':c.email||'','Password':c.password||'',
+    'Game ID':c.gameId||'','Contact':c.contact||'','Rate per 30 days (₹)':num(c.rate)||0,'Start date':fmtDate(c.start),'Expiry date':fmtDate(c.expiry),
+    'Days left':i.d,'Status':i.kind==='expired'?'Expired':(i.kind==='soon'?'Ending soon':'Active'),'Notes':c.notes||''
+  }});
+  const sales=state.sales.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(s=>({
+    'Date':fmtDate(s.date),'Client':s.name,'Days':num(s.days),'Amount (₹)':num(s.amount)
+  }));
+  const wb=XLSX.utils.book_new();
+  const ws1=XLSX.utils.json_to_sheet(clients.length?clients:[{'Name':'','Tag':'','Bot accounts':'','Email':'','Password':'','Game ID':'','Contact':'','Rate per 30 days (₹)':'','Start date':'','Expiry date':'','Days left':'','Status':'','Notes':''}]);
+  ws1['!cols']=[22,14,12,30,16,14,18,20,13,13,10,12,34].map(w=>({wch:w}));
+  const ws2=XLSX.utils.json_to_sheet(sales.length?sales:[{'Date':'','Client':'','Days':'','Amount (₹)':''}]);
+  ws2['!cols']=[13,24,8,14].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws1,'Clients');
+  XLSX.utils.book_append_sheet(wb,ws2,'Sales');
+  return wb;
+}
+async function downloadExcel(){
+  if(typeof XLSX==='undefined'){toast('The Excel library did not load. Check your connection and try again.');return}
+  if(!dl){
+    try{
+      XLSX.writeFile(buildWorkbook(),'Bot-Client-Ledger-'+todayISO()+'.xlsx');
+      state.settings.lastBackup=todayISO();
+      renderAll();toast('Excel copy downloaded');
+      await putSettings();
+    }catch(e){console.error(e);toast('Could not download the Excel file. Try again.')}
+    return;
+  }
+  try{
+    const buf=XLSX.write(buildWorkbook(),{bookType:'xlsx',type:'array'});
+    const r=await dl.save({filename:'Bot-Client-Ledger-'+todayISO()+'.xlsx',data:buf});
+    if(r&&(r.status==='saved'||r.status==='delivered')){
+      state.settings.lastBackup=todayISO();
+      renderAll();toast('Excel copy saved');
+      await putSettings();
+    }
+  }catch(e){
+    if(e&&e.code==='declined')return;
+    console.error(e);toast('Could not save the Excel file here. Try again.');
+  }
+}
+function parseAnyDate(v){
+  if(v===''||v==null)return null;
+  if(v instanceof Date&&!isNaN(v))return toISO(v);
+  if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*864e5));return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())}
+  const s=String(v).trim();let m;
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))return m[1]+'-'+pad(+m[2])+'-'+pad(+m[3]);
+  if((m=s.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3})[A-Za-z]*[-\/ ,]+(\d{4})/))){const mi=MONTHS.findIndex(x=>x.toLowerCase()===m[2].toLowerCase());if(mi>=0)return m[3]+'-'+pad(mi+1)+'-'+pad(+m[1])}
+  if((m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/)))return m[3]+'-'+pad(+m[2])+'-'+pad(+m[1]);
+  return null;
+}
+function pick(row,keys){
+  const ks=Object.keys(row);
+  for(const k of keys){
+    const f=ks.find(x=>x.toLowerCase().replace(/[^a-z0-9]/g,'').includes(k));
+    if(f!==undefined&&row[f]!==''&&row[f]!=null)return row[f];
+  }
+  return '';
+}
+function mergeIncoming(inClients,inSales){
+  const keyOf=c=>[c.name,c.email,c.gameId].join('|').toLowerCase();
+  const byId=new Map(state.clients.map(c=>[c.id,c])),byKey=new Map(state.clients.map(c=>[keyOf(c),c]));
+  const added=[],updated=[];
+  inClients.forEach(n=>{
+    const ex=byId.get(n.id)||byKey.get(keyOf(n));
+    if(ex){
+      if(String(n.expiry)>String(ex.expiry)){const keep={id:ex.id,created:ex.created};Object.assign(ex,n,keep);updated.push(ex)}
+    }else{added.push(n);byId.set(n.id,n);byKey.set(keyOf(n),n)}
+  });
+  state.clients=state.clients.concat(added);
+  const ids=new Set(state.sales.map(s=>s.id)),keys=new Set(state.sales.map(s=>[s.date,s.name,s.amount].join('|')));
+  const addedSales=[];
+  inSales.forEach(s=>{
+    const k=[s.date,s.name,s.amount].join('|');
+    if(ids.has(s.id)||keys.has(k))return;
+    ids.add(s.id);keys.add(k);addedSales.push(s);
+  });
+  state.sales=state.sales.concat(addedSales);
+  return {added,updated,addedSales};
+}
+function readExcelRows(wb){
+  const t=todayISO();
+  const sheetName=wb.SheetNames.find(n=>/client/i.test(n))||wb.SheetNames[0];
+  const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{defval:''});
+  const salesName=wb.SheetNames.find(n=>/sale/i.test(n));
+  const srows=salesName?XLSX.utils.sheet_to_json(wb.Sheets[salesName],{defval:''}):[];
+  const seen=new Set(),clients=[],sales=[];
+  rows.forEach(r=>{
+    const name=String(pick(r,['name'])).trim();
+    if(!name)return;
+    const email=String(pick(r,['email'])).trim(),game=String(pick(r,['gameid'])).trim();
+    const key=[name,email,game].join('|').toLowerCase();
+    if(seen.has(key))return;seen.add(key);
+    const expiry=parseAnyDate(pick(r,['expir']))||t;
+    let start=parseAnyDate(pick(r,['start']));
+    if(!start||start>expiry)start=addDays(expiry,-30);
+    let tagName=String(pick(r,['tag'])).trim();
+    if(!tagName&&/resell/i.test(String(pick(r,['type']))))tagName='Suppliers';
+    const tg=tagName?createTag(tagName):null;
+    clients.push({id:uid('c'),name,tag:tg?tg.id:'',bots:Math.max(1,Math.round(num(pick(r,['bot'])))||1),email,password:String(pick(r,['password'])),
+      gameId:game,contact:String(pick(r,['contact'])).trim(),rate:num(pick(r,['rate']))||'',start,expiry,notes:String(pick(r,['note'])),created:Date.now()});
+  });
+  srows.forEach(r=>{
+    const date=parseAnyDate(pick(r,['date'])),name=String(pick(r,['client'])).trim(),amount=num(pick(r,['amount']));
+    if(!date||!name||!amount)return;
+    const cl=clients.find(c=>c.name===name)||state.clients.find(c=>c.name===name);
+    sales.push({id:uid('s'),clientId:cl?cl.id:'',name,date,days:num(pick(r,['days'])),amount});
+  });
+  return {clients,sales};
+}
+async function importFile(file){
+  const isJSON=/\.json$/i.test(file.name);
+  try{
+    let inc;
+    if(isJSON){
+      const o=JSON.parse(await file.text());
+      if(!o||o.app!=='bot-client-ledger'||!Array.isArray(o.clients))throw new Error('not a ledger file');
+      const map={};
+      const inTags=o.settings&&Array.isArray(o.settings.tags)?o.settings.tags:[];
+      inTags.forEach(t=>{if(t&&t.name){const nt=createTag(t.name,Math.round(num(t.color)));if(nt)map[t.id]=nt.id}});
+      inc={
+        clients:o.clients.filter(c=>c&&c.name&&/^\d{4}-\d{2}-\d{2}$/.test(String(c.expiry))).map(c=>{
+          const n=Object.assign({},c,{id:safeId(c.id,'c'),created:c.created||Date.now()});
+          if(n.tag!==undefined&&n.tag!==null)n.tag=map[n.tag]||'';
+          return n;
+        }),
+        sales:(Array.isArray(o.sales)?o.sales:[]).filter(s=>s&&s.date&&s.name).map(s=>Object.assign({},s,{id:safeId(s.id,'s')}))
+      };
+    }else{
+      if(typeof XLSX==='undefined'){toast('The Excel library did not load. Check your connection and try again.');return}
+      const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsArrayBuffer(file)});
+      inc=readExcelRows(XLSX.read(data,{type:'array',cellDates:true}));
+    }
+    if(!inc.clients.length&&!inc.sales.length){toast('No clients found in that file.');return}
+    leaveExamples();
+    const res=mergeIncoming(inc.clients,inc.sales);
+    if(!res.added.length&&!res.updated.length&&!res.addedSales.length){renderAll();toast('Nothing new. Everything in that file is already in your ledger.');return}
+    closeSheet();renderAll();
+    toast('Imported: '+plural(res.added.length,'new client')+(res.updated.length?', '+res.updated.length+' updated':''));
+    queueSettings();
+    for(const c of res.added.concat(res.updated))await putClient(c);
+    for(const s of res.addedSales)await putSale(s);
+  }catch(e){
+    console.error(e);toast('Could not read that file. Use a data file or Excel file made by this ledger.');
+  }
+}
+async function exportData(){
+  if(state.examples){toast('Add a real client first. Only example clients are showing.');return}
+  const payload={app:'bot-client-ledger',version:2,exported:new Date().toISOString(),settings:state.settings,clients:state.clients,sales:state.sales};
+  const text=JSON.stringify(payload,null,2),name='Bot-Client-Ledger-data-'+todayISO()+'.json';
+  if(dl){
+    try{await dl.save({filename:name,data:text});toast('Data file saved')}
+    catch(e){if(e&&e.code==='declined')return;console.error(e);toast('Could not save the data file. Try again.')}
+    return;
+  }
+  try{
+    const url=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+    const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Data file downloaded');
+  }catch(e){console.error(e);toast('Could not download the data file. Try again.')}
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');
+  if(!b)return;
+  const act=b.dataset.act,id=b.dataset.id;
+  if(act==='toggle'){
+    const card=b.closest('.card');if(!card)return;
+    if(ui.select){togglePick(id,card);return}
+    const open=card.classList.toggle('open');
+    if(open)ui.open.add(id);else ui.open.delete(id);
+    b.setAttribute('aria-expanded',String(open));
+    syncExpandBtn();
+  }
+  else if(act==='add')openClientForm();
+  else if(act==='excel')downloadExcel();
+  else if(act==='import')$('#importFile').click();
+  else if(act==='export-data')exportData();
+  else if(act==='clear-examples'){state.clients=[];state.sales=[];state.examples=false;ui.seen.clear();ui.open.clear();renderAll()}
+  else if(act==='renew')renew(id,Number(b.dataset.days));
+  else if(act==='edit')openClientForm(id);
+  else if(act==='tag')openMoveSheet([id]);
+  else if(act==='delete')removeClient(id);
+  else if(act==='pw'){if(ui.shown.has(id))ui.shown.delete(id);else ui.shown.add(id);renderList()}
+  else if(act==='copy'){const c=findClient(id);if(c&&c[b.dataset.f])copyText(String(c[b.dataset.f]),b)}
+  else if(act==='reminder'){const c=findClient(id);if(c)copyText(reminderText(c),null)}
+});
+$('#btnAdd').addEventListener('click',()=>openClientForm());
+$('#btnExcel').addEventListener('click',downloadExcel);
+$('#btnSettings').addEventListener('click',openSettings);
+$('#btnTags').addEventListener('click',openTagManager);
+$('#btnSelect').addEventListener('click',()=>setSelect(!ui.select));
+$('#selDone').addEventListener('click',()=>setSelect(false));
+$('#selAll').addEventListener('click',()=>{visible().forEach(x=>ui.picked.add(x.c.id));renderList();renderSelbar()});
+$('#selMove').addEventListener('click',()=>{if(ui.picked.size)openMoveSheet(Array.from(ui.picked))});
+$('#btnExpand').addEventListener('click',()=>{
+  const cards=$$('#list .card');
+  const all=cards.length&&cards.every(c=>c.classList.contains('open'));
+  cards.forEach(c=>{
+    c.classList.toggle('open',!all);
+    const top=$('.c-top',c);if(top)top.setAttribute('aria-expanded',String(!all));
+    if(all)ui.open.delete(c.dataset.id);else ui.open.add(c.dataset.id);
+  });
+  syncExpandBtn();
+});
+$('#importFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)importFile(f)});
+$('#q').addEventListener('input',e=>{ui.q=e.target.value;renderList()});
+$('#sort').addEventListener('change',e=>{ui.sort=e.target.value;savePrefs();renderList()});
+$('#btnGroup').addEventListener('click',()=>{ui.group=!ui.group;savePrefs();$('#btnGroup').setAttribute('aria-pressed',String(ui.group));renderList()});
+$('#filters').addEventListener('click',e=>{const b=e.target.closest('.fchip');if(!b)return;ui.filter=b.dataset.f;renderFilters();renderList()});
+$('#tagbar').addEventListener('click',e=>{
+  const b=e.target.closest('[data-t]');if(!b)return;
+  if(b.dataset.t==='__manage'){openTagManager();return}
+  ui.tag=b.dataset.t;renderTagBar();renderFilters();renderList();
+});
+
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  $('#themeDay').setAttribute('aria-pressed',String(t==='light'));
+  $('#themeNight').setAttribute('aria-pressed',String(t!=='light'));
+  try{localStorage.setItem(LS_THEME,t)}catch(e){}
+}
+$('#themeDay').addEventListener('click',()=>applyTheme('light'));
+$('#themeNight').addEventListener('click',()=>applyTheme('dark'));
+applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light');
+
+/* ---------- boot ---------- */
+loadPrefs();
+$('#sort').value=ui.sort;
+const m0=readMirror();
+if(m0){state.clients=m0.clients;state.sales=m0.sales;mergeSettings(m0.settings)}
+else{mergeSettings({});loadExamples()}
+renderAll();
+
+setInterval(()=>{if(todayISO()!==ui.day)renderAll()},30000);
+
+(async function connect(){
+  try{
+    if(!window.claude||!window.claude.use)return;
+    const caps=await Promise.all([window.claude.use('db'),window.claude.use('user'),window.claude.use('downloads')]);
+    dl=caps[2]||null;
+    const db=caps[0],user=caps[1];
+    if(!db||!user)return;
+    const id=await user.id();
+    if(!id)return;
+    cloud.uid=id;
+    cloud.col=db.collection('data/users/'+id);
+    cloud.sub=cloud.col.onSnapshot(onSnap,err=>{console.error(err);cloud.failed=true;renderStatus();renderBanners()});
+    renderStatus();renderBanners();
+  }catch(e){console.error(e)}
+})();
+})();
+
+</script>
+</body>
+</html>
